@@ -6,9 +6,12 @@ import Mentors from "./components/Mentors";
 import Timeline from "./components/Timeline";
 import AboutSection from "./components/AboutSection";
 
+import Navbar from "./components/Navbar";
+
 export default function Home() {
   return (
     <>
+      <Navbar />
       <h1 className="text-white">Binary 2k26</h1>
 
       <ScrollFlipCard />
