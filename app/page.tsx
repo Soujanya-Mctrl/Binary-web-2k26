@@ -1,4 +1,6 @@
 import ScrollFlipCard from "./components/ScrollFlipCard";
+import Tracks from "./components/Tracks";
+import Mentors from "./components/Mentors";
 
 export default function Home() {
   return (
@@ -7,13 +9,15 @@ export default function Home() {
         
       </section> */}
 
-      <ScrollFlipCard />      
+      <ScrollFlipCard />
 
       <section className="h-screen bg-white flex items-center justify-center">
         <h2 className="text-5xl font-bold">
           Fully Transitioned Section
         </h2>
       </section>
+      <Tracks />
+      <Mentors />
     </>
   );
 }
