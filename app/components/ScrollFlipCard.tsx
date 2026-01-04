@@ -156,7 +156,7 @@ const [, forceRender] = useState(0);
                 }}
                 className="text-4xl font-bold text-green-900 text-lg lg:text-3xl"
               >
-                Next Section
+                Binary
               </h2>
             </div>
           </div>
