@@ -1,5 +1,11 @@
 'use client';
 
+import Gallary from "./components/gallary";
+import ScrollFlipCard from "./components/ScrollFlipCard";
+import Tracks from "./components/Tracks";
+import Mentors from "./components/Mentors";
+import Timeline from "./components/Timeline";
+import AboutSection from "./components/AboutSection";
 import { useState } from 'react';
 import SpaceInvadersLoading from '@/components/SpaceInvadersLoading';
 import HelloWorld from '@/components/HelloWorld';
@@ -23,6 +29,7 @@ export default function HomePage() {
   };
 
   return (
+    <>
     <div className="min-h-screen bg-black text-white relative">
       <PixelTransition isActive={transitionActive} />
 
@@ -37,5 +44,21 @@ export default function HomePage() {
         </div>
       )}
     </div>
+
+    <h1 className="text-white">Binary 2k26</h1>
+
+      <ScrollFlipCard />
+
+      <section className="h-screen bg-black flex items-center justify-center z-100">
+        <AboutSection />
+      </section>
+      <Tracks />
+      <Mentors />
+
+      <Timeline />
+
+      <Gallary />
+
+    </>
   );
 }
