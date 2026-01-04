@@ -1,12 +1,18 @@
 'use client';
 
 import { useState } from 'react';
-import SpaceInvadersLoading from '@/components/SpaceInvadersLoading';
-import HelloWorld from '@/components/HelloWorld';
-import PixelTransition from '@/components/PixelTransition';
+import SpaceInvadersLoading from '@/app/components/SpaceInvadersLoading';
+import PixelTransition from '@/app/components/PixelTransition';
 
+import Gallary from "./components/gallary";
+import ScrollFlipCard from "./components/ScrollFlipCard";
+import Tracks from "./components/Tracks";
+import Mentors from "./components/Mentors";
+import Timeline from "./components/Timeline";
+import AboutSection from "./components/AboutSection";
+import Navbar from "./components/Navbar";
 
-export default function HomePage() {
+export default function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [transitionActive, setTransitionActive] = useState<boolean>(false);
 
@@ -32,9 +38,18 @@ export default function HomePage() {
           onTransitionChange={setTransitionActive}
         />
       ) : (
-        <div className="flex items-center justify-center min-h-screen p-8">
-          <HelloWorld />
-        </div>
+        <>
+          <Navbar />
+          <h1 className="text-white">Binary 2k26</h1>
+          <ScrollFlipCard />
+          <section className="h-screen bg-black flex items-center justify-center z-100">
+            <AboutSection />
+          </section>
+          <Tracks />
+          <Mentors />
+          <Timeline />
+          <Gallary />
+        </>
       )}
     </div>
   );
