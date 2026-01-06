@@ -137,6 +137,7 @@ const Timeline = () => {
                   start: "top 20%",
                   end: "bottom bottom",
                   scrub: 2,
+                  markers: false,
               },
           });
       }
@@ -183,6 +184,7 @@ const Timeline = () => {
                   start: "top 20%",
                   end: "bottom bottom",
                   scrub: 1,
+                  markers: true,
               },
           });
       }
