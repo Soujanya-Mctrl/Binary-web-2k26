@@ -132,7 +132,7 @@ export default function ScrollFlipCard() {
     animate();
 
     return () => cancelAnimationFrame(rafId);
-  }, []); // Run once on mount
+  }, []); 
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     
