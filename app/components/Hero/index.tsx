@@ -1,4 +1,4 @@
-import { memo } from 'react';
+import { memo, useState } from 'react';
 import PageSection from '../../hooks/PageSection';
 import Image from 'next/image';
 // import { motion } from 'framer-motion';
@@ -7,6 +7,8 @@ import Image from 'next/image';
 import Clock from './Clock';
 
 import { Pixelify_Sans } from "next/font/google";
+import SpaceInvadersGame from '../SpaceInvadersGame';
+import { Gamepad2 } from 'lucide-react';
 
 const pixelifySans = Pixelify_Sans({
   variable: "--font-pixelify",
@@ -23,8 +25,22 @@ const Hero = ({ heroTopRef }: { heroTopRef: (node?: Element | null | undefined) 
 
   const glitchClockEnabled = true; // Enable glitch clock only on non-mobile devices
 
+  const [showGame, setShowGame] = useState(false);
+
   return (
-    <PageSection className="flex h-screen flex-col items-center justify-center">
+    <PageSection className="flex h-screen flex-col items-center justify-center relative">
+      {/* Game Floating Button */}
+      <button
+        onClick={() => setShowGame(true)}
+        className="fixed bottom-4 left-4 md:bottom-8 md:left-8 z-40 bg-green-500 hover:bg-green-600 text-black p-3 md:p-4 rounded-full shadow-[0_0_20px_rgba(34,197,94,0.6)] hover:shadow-[0_0_30px_rgba(34,197,94,0.8)] transition-all duration-300 hover:scale-110 active:scale-95 group"
+        title="Play Space Invaders"
+      >
+        <Gamepad2 className="w-6 h-6 md:w-8 md:h-8 group-hover:rotate-12 transition-transform duration-300" />
+      </button>
+
+      {/* Game Overlay */}
+      {showGame && <SpaceInvadersGame onClose={() => setShowGame(false)} />}
+
       {/* <a
         href='https://cicada.kgec.tech'
         target='_blank'
@@ -36,7 +52,7 @@ const Hero = ({ heroTopRef }: { heroTopRef: (node?: Element | null | undefined) 
           style={{
             animation: 'fly 6s infinite ease-in-out',
             transform: 'rotate(-30deg)',
-          }}
+            }}
         />
       </a> */}
       <div id="hero" ref={heroTopRef} className="flex flex-col justify-center gap-8">
