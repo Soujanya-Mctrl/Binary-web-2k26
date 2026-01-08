@@ -282,7 +282,7 @@ const Timeline = () => {
 
 
   return (
-    <PageSection id="timeline justify-center">
+    <PageSection id="timeline">
       <div className="my-2 mb-8 md:text-[3rem]">
             <ArcadeHeader text="Timeline" />
           </div>

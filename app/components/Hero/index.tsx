@@ -28,7 +28,7 @@ const Hero = ({ heroTopRef }: { heroTopRef: (node?: Element | null | undefined) 
   const [showGame, setShowGame] = useState(false);
 
   return (
-    <PageSection className="flex h-screen flex-col items-center justify-center relative">
+    <PageSection id="hero" className="flex h-screen flex-col items-center justify-center relative">
       {/* Game Floating Button */}
       <button
         onClick={() => setShowGame(true)}
@@ -55,7 +55,7 @@ const Hero = ({ heroTopRef }: { heroTopRef: (node?: Element | null | undefined) 
             }}
         />
       </a> */}
-      <div id="hero" ref={heroTopRef} className="flex flex-col justify-center gap-8">
+      <div ref={heroTopRef} className="flex flex-col justify-center gap-8">
         <div className="mt-16 flex w-full flex-col items-center justify-center md:mt-0 md:text-[1.5rem]">
           <div className="mt-[15%] flex w-full flex-col items-center justify-center lg:mt-[10%]">
             <Image height={800} width={500} className="glitch opacity-[200]" src='/herologo.png' alt="Binary Hackathon" />
