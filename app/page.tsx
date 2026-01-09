@@ -16,6 +16,8 @@ import Footer from "./components/Footer";
 import CommunityPartners from "./components/CommunityPartners";
 import Sponsors from "./components/Sponsors";
 import Hero from './components/Hero';
+import TetrisInterface from "./components/TetrisInterface";
+import GlobalGameButton from "./components/GlobalGameButton";
 import { useInView } from 'react-intersection-observer';
 
 
@@ -23,7 +25,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [transitionActive, setTransitionActive] = useState<boolean>(false);
 
-  const [heroTopRef, heroTopInView] = useInView({
+  const [heroTopRef] = useInView({
     threshold: 0.5,
     triggerOnce: true,
     initialInView: true,
@@ -56,6 +58,7 @@ export default function Home() {
             <Navbar />
             {/* <ScrollFlipCard /> */}
             <Hero heroTopRef={heroTopRef} />
+            {/* <TetrisInterface /> */}
             <AboutSection />
             <Timeline />
             <Tracks />
@@ -65,6 +68,7 @@ export default function Home() {
             <CommunityPartners />
             <FAQs />
             <Footer />
+            <GlobalGameButton />
           </>
         )}
       </div>
