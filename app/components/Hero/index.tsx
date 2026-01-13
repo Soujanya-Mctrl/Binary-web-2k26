@@ -8,7 +8,7 @@ import Image from 'next/image';
 import Clock from './Clock';
 
 import { Pixelify_Sans } from "next/font/google";
-import SpaceInvadersGame from '../SpaceInvadersGame';
+import SpaceInvadersGame from '../SpaceInvaders';
 import { Gamepad2 } from 'lucide-react';
 
 const pixelifySans = Pixelify_Sans({

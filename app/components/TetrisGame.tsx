@@ -2,7 +2,7 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { Pixelify_Sans, Geist_Mono } from "next/font/google";
-import { X } from 'lucide-react';
+import { X, ChevronLeft } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const pixelify = Pixelify_Sans({
@@ -131,7 +131,7 @@ const NextPiecePreview = ({ typeId }: { typeId: number }) => {
 
 // --- MAIN INTERFACE ---
 
-const TetrisGame = ({ onClose }: { onClose: () => void }) => {
+const TetrisGame = ({ onClose, onBack }: { onClose: () => void, onBack?: () => void }) => {
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const canvasContainerRef = useRef<HTMLDivElement>(null);
 
@@ -401,12 +401,24 @@ const TetrisGame = ({ onClose }: { onClose: () => void }) => {
 
     return (
         <div className={`fixed inset-0 z-50 bg-black/90 flex items-center justify-center ${geistMono.variable} ${pixelify.variable} font-sans`}>
-            <button
-                onClick={onClose}
-                className="absolute top-6 right-6 z-[80] text-green-500 hover:text-green-300 transition-colors p-2 hover:bg-green-900/20 rounded-full"
-            >
-                <X size={32} />
-            </button>
+            <div className="absolute top-6 right-6 z-[200] flex gap-4">
+                {onBack && (
+                    <button
+                        onClick={onBack}
+                        className="text-green-500 hover:text-green-300 transition-colors bg-black/40 p-2 hover:bg-green-900/40 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                        title="Back to Menu"
+                    >
+                        <ChevronLeft size={32} />
+                    </button>
+                )}
+                <button
+                    onClick={onClose}
+                    className="text-green-500 hover:text-green-300 transition-colors bg-black/40 p-2 hover:bg-green-900/40 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.3)]"
+                    title="Close Game"
+                >
+                    <X size={32} />
+                </button>
+            </div>
 
             <section className="w-full max-w-7xl h-[85vh] p-4 flex flex-col lg:flex-row gap-4 relative z-10">
 
