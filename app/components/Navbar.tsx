@@ -7,12 +7,71 @@ import { motion } from "framer-motion";
 import { HyperText } from './ui/hyper-text';
 import { useRouter, usePathname } from 'next/navigation';
 import { Pixelify_Sans } from 'next/font/google';
+import { useGlitch } from 'react-powerglitch';
 
 const pixelifySans = Pixelify_Sans({
     subsets: ['latin'],
     weight: ['400', '700'],
     variable: '--font-pixelify-sans',
 });
+
+// Component to handle individual nav items with glitch effect
+function NavItemWithGlitch({
+    item,
+    isActive,
+    onClick,
+    isMobile = false
+}: {
+    item: { name: string; path: string },
+    isActive: boolean,
+    onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void,
+    isMobile?: boolean
+}) {
+    const glitch = useGlitch({
+        playMode: 'hover',
+        createContainers: true,
+        hideOverflow: false,
+        timing: {
+            duration: 250,
+            iterations: 1,
+        },
+        glitchTimeSpan: {
+            start: 0,
+            end: 1,
+        },
+        shake: {
+            velocity: 15,
+            amplitudeX: 0.2,
+            amplitudeY: 0.2,
+        },
+        slice: {
+            count: 6,
+            velocity: 15,
+            minHeight: 0.02,
+            maxHeight: 0.15,
+            hueRotate: true,
+        },
+        pulse: false,
+    });
+
+    return (
+        <a
+            href={item.path}
+            onClick={onClick}
+            className={`${isMobile ? 'block' : ''} px-3 py-2 rounded-md ${isMobile ? 'text-base' : 'text-lg'} font-mono transition-all duration-300 flex items-center cursor-pointer ${pixelifySans.className} ${isActive
+                ? "text-green-500"
+                : "text-gray-300 hover:text-green-400"
+                }`}
+        >
+            <div ref={glitch.ref} className="flex items-center">
+                {isActive && (
+                    <span className={`w-2 h-2 ${isMobile ? 'rounded-full' : ''} bg-green-500 mr-2`} />
+                )}
+                {item.name}
+            </div>
+        </a>
+    );
+}
 
 export default function Navbar() {
     const router = useRouter();
@@ -116,22 +175,15 @@ export default function Navbar() {
     return (
         <nav className="fixed top-0 left-0 w-full z-60 bg-black/80 backdrop-blur-md border-b border-green-500/20 overflow-hidden">
             {/* Desktop Scroll Progress Overlay */}
-            {/* Desktop Scroll Progress Overlay */}
             <motion.div
                 className="hidden md:block absolute inset-y-0 left-0 bg-white/10 z-0 h-full"
-                animate={{ width: `${scrollProgress}%` }}
-                transition={{ ease: "linear", duration: 0.1 }}
-            />
-            {/* Mobile Scroll Progress Overlay */}
-            <motion.div
-                className="md:hidden absolute inset-y-0 left-0 bg-white/10 z-0 h-full"
                 animate={{ width: `${scrollProgress}%` }}
                 transition={{ ease: "linear", duration: 0.1 }}
             />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="flex items-center justify-between h-16">
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                         <div className="flex items-center gap-4">
                             <a href="#" className="flex items-center">
                                 <NextImage
@@ -156,25 +208,12 @@ export default function Navbar() {
                     <div className="hidden md:block">
                         <div className={`ml-10 flex items-center space-x-4`}>
                             {navItems.map((item, index) => (
-                                <a
+                                <NavItemWithGlitch
                                     key={item.name}
-                                    href={item.path}
+                                    item={item}
+                                    isActive={activeSection === item.path}
                                     onClick={(e) => handleNavClick(e, item.path)}
-                                    className={`px-3 py-2 rounded-md text-lg font-mono transition-all duration-300 flex items-center cursor-pointer ${pixelifySans.className} ${activeSection === item.path
-                                        ? "text-green-500"
-                                        : "text-gray-300 hover:text-green-400"
-                                        }`}
-                                >
-                                    {activeSection === item.path && (
-                                        <span className="w-2 h-2  bg-green-500 mr-2" />
-                                    )}
-                                    {/* <HyperText
-                                        as="span"
-                                        className="text-sm font-mono bg-transparent p-0"
-                                    > */}
-                                        {item.name}
-                                    {/* </HyperText> */}
-                                </a>
+                                />
                             ))}
                         </div>
                     </div>
@@ -197,7 +236,7 @@ export default function Navbar() {
                                 key={item.name}
                                 href={item.path}
                                 onClick={(e) => handleNavClick(e, item.path)}
-                                className={`block px-3 py-2 rounded-md text-base font-medium flex items-center cursor-pointer ${pixelifySans.className} ${activeSection === item.path
+                                className={`px-3 py-2 rounded-md text-base font-medium flex items-center cursor-pointer ${pixelifySans.className} ${activeSection === item.path
                                     ? "text-green-500"
                                     : "text-gray-300 hover:text-green-400"
                                     }`}
@@ -209,7 +248,7 @@ export default function Navbar() {
                                     as="span"
                                     className="text-base font-mono bg-transparent p-0"
                                 > */}
-                                    {item.name}
+                                {item.name}
                                 {/* </HyperText> */}
                             </a>
                         ))}
@@ -219,5 +258,3 @@ export default function Navbar() {
         </nav>
     );
 };
-
-
