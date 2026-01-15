@@ -2,6 +2,12 @@
 import { useState } from 'react';
 import { Marquee } from "./magicui/marquee";
 import ArcadeHeader from './ui/ArcadeHeader';
+import { Pixelify_Sans } from "next/font/google";
+
+const pixelifySans = Pixelify_Sans({
+    variable: "--font-pixelify",
+    subsets: ["latin"],
+});
 
 const teamMembers = [
     {
@@ -254,71 +260,17 @@ const Mentors = () => {
             <div className="absolute inset-0 pointer-events-none">
             </div>
 
-            <div className="relative mx-auto max-w-7xl px-4">
-                {/* Header */}
-                <div className="mx-auto max-w-2xl text-center">
-                    <div className="mb-10">
-                        <ArcadeHeader text="Mentors" />
-                    </div>
+            {/* Header */}
+            <div className="mx-auto max-w-2xl text-center filter select-none pointer-events-none">
+                <div className="mb-11">
+                    <ArcadeHeader text="Mentors" />
                 </div>
+            </div>
 
-                {/* Team marquee - Slower animations */}
-                {/* Desktop Layout - Vertical Columns */}
-                <div className="mt-0 hidden md:flex justify-center gap-20 max-h-[800px] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,black_10%,black_90%,transparent)]">
-                    <div className="hidden lg:block">
-                        <Marquee pauseOnHover vertical className="[--duration:45s]">
-                            {firstColumn.map((member) => (
-                                <TeamMemberCard
-                                    key={member.name}
-                                    {...member}
-                                    highlightDirection="tr-bl"
-                                    onClick={() => handleCardClick(member)}
-                                />
-                            ))}
-                        </Marquee>
-                    </div>
-
-                    <div className="hidden md:block">
-                        <Marquee reverse pauseOnHover vertical className="[--duration:45s]">
-                            {secondColumn.map((member) => (
-                                <TeamMemberCard
-                                    key={member.name}
-                                    {...member}
-                                    highlightDirection="tl-br"
-                                    onClick={() => handleCardClick(member)}
-                                />
-                            ))}
-                        </Marquee>
-                    </div>
-
-                    <div>
-                        <Marquee pauseOnHover vertical className="[--duration:45s]">
-                            {thirdColumn.map((member) => (
-                                <TeamMemberCard
-                                    key={member.name}
-                                    {...member}
-                                    highlightDirection="tr-bl"
-                                    onClick={() => handleCardClick(member)}
-                                />
-                            ))}
-                        </Marquee>
-                    </div>
-                </div>
-
-                {/* Mobile Layout - Horizontal Marquee */}
-                <div className="mt-10 md:hidden block overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_10%,black_90%,transparent)]">
-                    <Marquee pauseOnHover className="[--duration:45s]">
-                        {teamMembers.map((member) => (
-                            <div key={member.name} className="px-4">
-                                <TeamMemberCard
-                                    {...member}
-                                    highlightDirection="tr-bl"
-                                    onClick={() => handleCardClick(member)}
-                                />
-                            </div>
-                        ))}
-                    </Marquee>
-                </div>
+            <div className="flex items-center justify-center min-h-20 md:min-h-50">
+                <p className={`text-4xl md:text-6xl font-bold text-white uppercase tracking-widest ${pixelifySans.className}`}>
+                    Coming Soon!
+                </p>
             </div>
 
             {/* Popup Modal */}

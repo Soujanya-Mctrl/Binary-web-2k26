@@ -177,9 +177,18 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
             const marginY = isNarrow ? 90 : 100;
             let score = 0;
 
+            // INTRO STATE
+            // 'screen': screen expands
+            // 'player': player rises
+            // 'boss_spawn': boss pixels appear
+            // 'playing': game active
+            let introState: 'screen' | 'player' | 'boss_spawn' | 'playing' = 'screen';
+            let screenAnimProgress = 0; // 0 to 1
+
+            const targetPlayerY = canvas.height - 48 - marginY;
             const player: Player = {
                 x: canvas.width / 2 - 16,
-                y: canvas.height - 48 - marginY,
+                y: canvas.height + 50, // Start off-screen
                 width: 32 * sizeMultiplier,
                 height: 32 * sizeMultiplier,
                 speed: 4 * speedMultiplier,
@@ -218,7 +227,7 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
             }
 
             const shootInterval = setInterval(() => {
-                if (!bossDefeated && !spawning && holdTimer >= 60) {
+                if (introState === 'playing' && !bossDefeated && holdTimer >= 60) {
                     // Auto-fire in auto mode, or if Space is held in manual mode (or just auto-fire always for arcade feel)
                     // For arcade feel, let's keep auto-fire always on to make it easier, or check keysRef for Space
                     if (gameModeRef.current === 'auto' || keysRef.current[' '] || true) { // Defaulting to auto-fire for now as per "manual play" request usually implies movement, but let's stick to simple
@@ -286,7 +295,7 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
             window.addEventListener('keyup', keyUp);
 
             const updatePlayerControl = () => {
-                if (bossDefeated) {
+                if (bossDefeated || introState !== 'playing') {
                     player.dx = 0;
                     return;
                 }
@@ -315,22 +324,51 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
             };
 
             const update = () => {
-                if (spawning) {
+                // --- INTRO LOGIC ---
+                if (introState === 'screen') {
+                    // Animate Screen Expansion
+                    screenAnimProgress += 0.02;
+                    if (screenAnimProgress >= 1) {
+                        screenAnimProgress = 1;
+                        introState = 'player';
+                    }
+                    return;
+                }
+
+                if (introState === 'player') {
+                    // Animate Player Rising
+                    player.y -= 5;
+                    if (player.y <= targetPlayerY) {
+                        player.y = targetPlayerY;
+                        introState = 'boss_spawn';
+                        // Re-trigger spawn pixels for boss
+                        // Reset boss pixels delay/alpha if needed? 
+                        // Actually initSpawnPixels sets initial state.
+                    }
+                    return;
+                }
+
+                if (introState === 'boss_spawn') {
                     let allComplete = true;
-                    [...playerSpawnPixels, ...bossSpawnPixels].forEach(p => {
+                    // Only animate boss pixels
+                    bossSpawnPixels.forEach(p => {
                         if (p.delay > 0) {
                             p.delay--;
                             allComplete = false;
-                            p.alpha += 0.2; // Faster transition to match 0.1s
+                        } else {
+                            p.alpha += 0.1;
                             if (p.alpha < 1) allComplete = false;
                         }
                     });
 
                     if (allComplete) {
-                        spawning = false;
+                        introState = 'playing';
                     }
-                    return; // Pause game during spawning
+                    return;
                 }
+
+                // --- END INTRO LOGIC ---
+
 
                 if (holdTimer < 60) {
                     holdTimer++;
@@ -344,13 +382,13 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
                         setShowYouWon(true);
                     }
 
-                    if (youWonTimer === 120) {
+                    if (youWonTimer === 30) {
                         // --- TRANSITION WIPE #3: From Game Win -> Main App ---
                         // Making it exactly like Wipe 2: Trigger transition, wait for coverage, then exit.
                         onTransitionChange(true);
                     }
 
-                    if (youWonTimer === 210) { // ~1.5s later at 60fps
+                    if (youWonTimer === 60) { // ~1s later
                         if (onLoadingComplete) {
                             onLoadingComplete();
                             setIsLoading(false);
@@ -448,8 +486,8 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
                 alpha: number;
             }
 
-            let spawning = true;
-            let playerSpawnPixels: SpawnPixel[] = [];
+            // let spawning = true; // REMOVED
+            // let playerSpawnPixels: SpawnPixel[] = []; // REMOVED
             let bossSpawnPixels: SpawnPixel[] = [];
 
             const initSpawnPixels = (
@@ -514,7 +552,7 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
             ];
 
             // Initialize spawn pixels
-            initSpawnPixels(player.x, player.y, playerPattern, 4, '#0f0', playerSpawnPixels);
+            // initSpawnPixels(player.x, player.y, playerPattern, 4, '#0f0', playerSpawnPixels); // REMOVED
             initSpawnPixels(boss.x, boss.y, bossPattern, 8, '#0f0', bossSpawnPixels);
 
             const drawSpawningSprite = (pixels: SpawnPixel[]) => {
@@ -532,23 +570,27 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
             };
 
             const drawPlayer = () => {
-                if (spawning) {
-                    drawSpawningSprite(playerSpawnPixels);
-                } else {
-                    drawPixelSprite(player.x, player.y, '#0f0', playerPattern, 4);
-                }
+                // If checking pixel spawn: 
+                // if (spawning) drawSpawningSprite(playerSpawnPixels); 
+                // else 
+                drawPixelSprite(player.x, player.y, '#0f0', playerPattern, 4);
             };
 
             const drawBoss = () => {
                 if (boss.health <= 0) return;
 
-                if (spawning) {
+                if (introState === 'boss_spawn') {
                     drawSpawningSprite(bossSpawnPixels);
-                } else {
-                    drawPixelSprite(boss.x, boss.y, '#0f0', bossPattern, 8);
+                } else if (introState === 'playing' || introState === 'screen' || introState === 'player') {
+                    // During screen/player intro, boss is not visible? 
+                    // Or draw it if it's supposed to be there?
+                    // Logic: Boss spawns AFTER player arrives. 
+                    if (introState === 'playing') {
+                        drawPixelSprite(boss.x, boss.y, '#0f0', bossPattern, 8);
+                    }
                 }
 
-                if (!spawning) {
+                if (introState === 'playing') {
                     const barWidth = boss.width;
                     const barHeight = 8;
                     const barX = boss.x;
@@ -618,23 +660,42 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
                 const gameH = canvas.height - 2 * marginY;
 
                 // --- Game Area Clipping ---
-                ctx.save();
-                ctx.beginPath();
-                if (ctx.roundRect) {
-                    ctx.roundRect(marginX, marginY, gameW, gameH, 20);
-                } else {
-                    ctx.rect(marginX, marginY, gameW, gameH);
-                }
-                ctx.clip();
+                if (introState === 'screen') {
+                    // Animate Clipping
+                    const centerX = marginX + gameW / 2;
+                    const centerY = marginY + gameH / 2;
+                    const currentW = gameW * screenAnimProgress;
+                    const currentH = gameH * screenAnimProgress;
 
-                // Draw Black BG for game
-                ctx.fillStyle = '#000';
-                if (ctx.roundRect) {
+                    ctx.save();
                     ctx.beginPath();
-                    ctx.roundRect(marginX, marginY, gameW, gameH, 20);
-                    ctx.fill();
+                    // Expanding box
+                    ctx.rect(centerX - currentW / 2, centerY - currentH / 2, currentW, currentH);
+                    ctx.clip();
+
+                    // Draw Black BG
+                    ctx.fillStyle = '#000';
+                    ctx.fillRect(centerX - currentW / 2, centerY - currentH / 2, currentW, currentH);
                 } else {
-                    ctx.fillRect(marginX, marginY, gameW, gameH);
+                    // Full View
+                    ctx.save();
+                    ctx.beginPath();
+                    if (ctx.roundRect) {
+                        ctx.roundRect(marginX, marginY, gameW, gameH, 20);
+                    } else {
+                        ctx.rect(marginX, marginY, gameW, gameH);
+                    }
+                    ctx.clip();
+
+                    // Draw Black BG for game
+                    ctx.fillStyle = '#000';
+                    if (ctx.roundRect) {
+                        ctx.beginPath();
+                        ctx.roundRect(marginX, marginY, gameW, gameH, 20);
+                        ctx.fill();
+                    } else {
+                        ctx.fillRect(marginX, marginY, gameW, gameH);
+                    }
                 }
 
                 ctx.fillStyle = '#0f0';
@@ -647,65 +708,72 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
                     }
                 });
 
-                drawBoss();
-                drawPlayer();
-                drawBullets();
-                drawExplosions();
-                drawParticles();
+                // During 'screen' phase, maybe we don't draw entities yet? 
+                // Or maybe we do, but they are clipped.
+                // Player is offscreen anyway.
 
-
+                if (introState !== 'screen') {
+                    drawBoss();
+                    drawPlayer();
+                    drawBullets();
+                    drawExplosions();
+                    drawParticles();
+                }
 
                 ctx.restore();
                 // --- End Clipping ---
 
                 // --- UI Text ---
-                // UI Text Settings
-                ctx.fillStyle = '#22c55e';
-                ctx.font = isNarrow ? '14px "Press Start 2P"' : '20px "Press Start 2P"';
-                ctx.shadowColor = '#22c55e';
-                ctx.shadowBlur = 5;
-
-                if (!bossDefeated) {
-                    ctx.textAlign = 'center';
-                    ctx.fillText('BOSS BATTLE', canvas.width / 2, marginY / 2 + 10);
-                }
-
-                // Blinking Effect for UI
-                const blinkAlpha = 0.7 + 0.3 * Math.sin(Date.now() / 200);
-                const originalShadowBlur = ctx.shadowBlur;
-
-                // Score Counter
-                ctx.globalAlpha = blinkAlpha;
-                ctx.textAlign = 'left';
-                ctx.fillText(`SCORE`, 20, 40);
-                ctx.fillText(`${score.toString().padStart(6, '0')}`, 20, 70);
-
-                // Health/Lives System (Mockup)
-                ctx.textAlign = 'right';
-                ctx.fillText(`LIVES`, canvas.width - 20, 40);
-                ctx.fillText('♥ ♥ ♥', canvas.width - 20, 70);
-
-                // Bottom Logo Area
-                const logoY = canvas.height - 30;
-                const logoH = isNarrow ? 35 : 70; // Increased size as requested
-
-                if (logo.complete && logo.naturalWidth > 0) {
-                    const drawH = logoH;
-                    const aspectRatio = logo.naturalWidth / logo.naturalHeight;
-                    const drawW = drawH * aspectRatio;
-                    ctx.drawImage(logo, canvas.width / 2 - drawW / 2, logoY - (isNarrow ? 25 : 50), drawW, drawH);
+                if (introState !== 'playing' && introState !== 'boss_spawn') {
+                    // DON'T SHOW UI YET
                 } else {
-                    ctx.textAlign = 'center';
-                    ctx.font = isNarrow ? '14px "Press Start 2P"' : '24px "Press Start 2P"';
-                    ctx.fillText('BINARY DEFENSE', canvas.width / 2, logoY - 10);
+                    // UI Text Settings
+                    ctx.fillStyle = '#22c55e';
+                    ctx.font = isNarrow ? '14px "Press Start 2P"' : '20px "Press Start 2P"';
+                    ctx.shadowColor = '#22c55e';
+                    ctx.shadowBlur = 5;
+
+                    if (!bossDefeated) {
+                        ctx.textAlign = 'center';
+                        ctx.fillText('BOSS BATTLE', canvas.width / 2, marginY / 2 + 10);
+                    }
+
+                    // Blinking Effect for UI
+                    const blinkAlpha = 0.7 + 0.3 * Math.sin(Date.now() / 200);
+                    const originalShadowBlur = ctx.shadowBlur;
+
+                    // Score Counter
+                    ctx.globalAlpha = blinkAlpha;
+                    ctx.textAlign = 'left';
+                    ctx.fillText(`SCORE`, 20, 40);
+                    ctx.fillText(`${score.toString().padStart(6, '0')}`, 20, 70);
+
+                    // Health/Lives System (Mockup)
+                    ctx.textAlign = 'right';
+                    ctx.fillText(`LIVES`, canvas.width - 20, 40);
+                    ctx.fillText('♥ ♥ ♥', canvas.width - 20, 70);
+
+                    // Bottom Logo Area
+                    const logoY = canvas.height - 30;
+                    const logoH = isNarrow ? 35 : 70; // Increased size as requested
+
+                    if (logo.complete && logo.naturalWidth > 0) {
+                        const drawH = logoH;
+                        const aspectRatio = logo.naturalWidth / logo.naturalHeight;
+                        const drawW = drawH * aspectRatio;
+                        ctx.drawImage(logo, canvas.width / 2 - drawW / 2, logoY - (isNarrow ? 25 : 50), drawW, drawH);
+                    } else {
+                        ctx.textAlign = 'center';
+                        ctx.font = isNarrow ? '14px "Press Start 2P"' : '24px "Press Start 2P"';
+                        ctx.fillText('BINARY DEFENSE', canvas.width / 2, logoY - 10);
+                    }
+
+                    ctx.globalAlpha = 1.0;
+                    ctx.shadowBlur = originalShadowBlur;
+                    ctx.font = '12px Helvetica, Arial, sans-serif';
+                    ctx.fillStyle = '#15803d';
+                    ctx.shadowBlur = 0;
                 }
-
-                ctx.globalAlpha = 1.0;
-                ctx.shadowBlur = originalShadowBlur;
-                ctx.font = '12px Helvetica, Arial, sans-serif';
-                ctx.fillStyle = '#15803d';
-                ctx.shadowBlur = 0;
-
 
             };
 
@@ -724,7 +792,7 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
                 setTimeout(() => {
                     if (onLoadingComplete) onLoadingComplete();
                     setIsLoading(false);
-                }, 1500);
+                }, 500);
                 skipLoadingRef.current = null;
             };
             skipLoadingRef.current = skip;
@@ -758,7 +826,7 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
                 setTimeout(() => {
                     if (onLoadingComplete) onLoadingComplete();
                     setIsLoading(false);
-                }, 1500);
+                }, 500);
                 skipLoadingRef.current = null;
             };
             skipLoadingRef.current = skip;
@@ -779,21 +847,19 @@ const SpaceInvadersLoading: React.FC<SpaceInvadersLoadingProps> = ({ onLoadingCo
 
                 // Update Progress
                 if (progress < 100) {
-                    if (Math.random() < 0.1) progress += Math.random() * 5;
-                    progress += 0.05;
+                    if (Math.random() < 0.1) progress += Math.random() * 15;
+                    progress += 1.5;
                     if (progress > 100) progress = 100;
                 } else {
                     engagingTimer++;
                     if (engagingTimer === 1) {
-                        // --- TRANSITION WIPE #2: From Loading Bar -> Boss Battle ---
-                        onTransitionChange(true);
+                        // REMOVED Transition effect
+                        // Just wait a bit
                     }
 
-                    if (engagingTimer === 90) { // Wait for solid coverage (~1.5s)
+                    if (engagingTimer === 40) { // Wait for completion
                         cancelAnimationFrame(loadingAnimId);
                         runLevel();
-                        // Reveal the game
-                        setTimeout(() => onTransitionChange(false), 300);
                         return;
                     }
                 }

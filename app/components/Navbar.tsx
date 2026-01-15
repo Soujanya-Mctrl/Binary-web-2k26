@@ -1,24 +1,94 @@
 "use client";
+
 import { useState, useEffect, useRef } from 'react';
 import { Menu, X } from 'lucide-react';
 import NextImage from "next/image";
 import { motion } from "framer-motion";
 import { HyperText } from './ui/hyper-text';
+import { useRouter, usePathname } from 'next/navigation';
+import { Pixelify_Sans } from 'next/font/google';
+import { useGlitch } from 'react-powerglitch';
 
-const Navbar = () => {
+const pixelifySans = Pixelify_Sans({
+    subsets: ['latin'],
+    weight: ['400', '700'],
+    variable: '--font-pixelify-sans',
+});
+
+// Component to handle individual nav items with glitch effect
+function NavItemWithGlitch({
+    item,
+    isActive,
+    onClick,
+    isMobile = false
+}: {
+    item: { name: string; path: string },
+    isActive: boolean,
+    onClick: (e: React.MouseEvent<HTMLAnchorElement>) => void,
+    isMobile?: boolean
+}) {
+    const glitch = useGlitch({
+        playMode: 'hover',
+        createContainers: true,
+        hideOverflow: false,
+        timing: {
+            duration: 250,
+            iterations: 1,
+        },
+        glitchTimeSpan: {
+            start: 0,
+            end: 1,
+        },
+        shake: {
+            velocity: 15,
+            amplitudeX: 0.2,
+            amplitudeY: 0.2,
+        },
+        slice: {
+            count: 6,
+            velocity: 15,
+            minHeight: 0.02,
+            maxHeight: 0.15,
+            hueRotate: true,
+        },
+        pulse: false,
+    });
+
+    return (
+        <a
+            href={item.path}
+            onClick={onClick}
+            className={`${isMobile ? 'block' : ''} px-3 py-2 rounded-md ${isMobile ? 'text-base' : 'text-lg'} font-mono transition-all duration-300 flex items-center cursor-pointer ${pixelifySans.className} ${isActive
+                ? "text-green-500"
+                : "text-gray-300 hover:text-green-400"
+                }`}
+        >
+            <div ref={glitch.ref} className="flex items-center">
+                {isActive && (
+                    <span className={`w-2 h-2 ${isMobile ? 'rounded-full' : ''} bg-green-500 mr-2`} />
+                )}
+                {item.name}
+            </div>
+        </a>
+    );
+}
+
+export default function Navbar() {
+    const router = useRouter();
+    const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
     const [activeSection, setActiveSection] = useState('');
 
 
     const navItems = [
-        { name: 'About', href: '#about' },
-        { name: 'Timeline', href: '#timeline' },
-        { name: 'Tracks', href: '#tracks' },
-        { name: 'Gallery', href: '#gallery' },
-        { name: 'Mentors', href: '#mentors' },
-        { name: 'Sponsors', href: '#sponsors' },
-        { name: 'Community', href: '#community-partners' },
-        { name: 'FAQs', href: '#faqs' },
+        { name: 'About', path: '#about' },
+        { name: 'Timeline', path: '#timeline' },
+        { name: 'Tracks', path: '#tracks' },
+        { name: 'Gallery', path: '#gallery' },
+        { name: 'Mentors', path: '#mentors' },
+        { name: 'Sponsors', path: '#sponsors' },
+        { name: 'Community', path: '#community-partners' },
+        { name: 'FAQs', path: '#faqs' },
     ];
 
     const [activeIndex, setActiveIndex] = useState(-1);
@@ -46,10 +116,10 @@ const Navbar = () => {
             }
 
             const entries = navItems.map(item => {
-                const el = document.querySelector(item.href);
+                const el = document.querySelector(item.path);
                 if (el) {
                     return {
-                        id: item.href,
+                        id: item.path,
                         offset: Math.abs(el.getBoundingClientRect().top - 100)
                     };
                 }
@@ -66,7 +136,7 @@ const Navbar = () => {
             if (closest.offset < window.innerHeight / 2) { // Only highlight if reasonably close/visible
                 setActiveSection(closest.id);
                 // Update active index based on the new active section
-                const newIndex = navItems.findIndex(item => item.href === closest.id);
+                const newIndex = navItems.findIndex(item => item.path === closest.id);
                 setActiveIndex(newIndex);
             }
 
@@ -81,11 +151,21 @@ const Navbar = () => {
         e.preventDefault();
         setIsOpen(false);
         const target = document.querySelector(href);
+
         if (target) {
-            if (window.lenis) {
-                window.lenis.scrollTo(target as HTMLElement);
+            const lenis = (window as any).lenis;
+            if (lenis && typeof lenis.scrollTo === 'function') {
+                lenis.scrollTo(target as HTMLElement);
             } else {
-                target.scrollIntoView({ behavior: 'smooth' });
+                // Fallback with offset for fixed header
+                const headerOffset = 80; // Adjust based on your navbar height
+                const elementPosition = target.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: "smooth"
+                });
             }
         }
     };
@@ -93,24 +173,17 @@ const Navbar = () => {
 
 
     return (
-        <nav className="fixed top-0 left-0 w-full z-50 bg-black/80 backdrop-blur-md border-b border-green-500/20 overflow-hidden">
-            {/* Desktop Scroll Progress Overlay */}
+        <nav className="fixed top-0 left-0 w-full z-60 bg-black/80 backdrop-blur-md border-b border-green-500/20 overflow-hidden">
             {/* Desktop Scroll Progress Overlay */}
             <motion.div
                 className="hidden md:block absolute inset-y-0 left-0 bg-white/10 z-0 h-full"
                 animate={{ width: `${scrollProgress}%` }}
                 transition={{ ease: "linear", duration: 0.1 }}
             />
-            {/* Mobile Scroll Progress Overlay */}
-            <motion.div
-                className="md:hidden absolute inset-y-0 left-0 bg-white/10 z-0 h-full"
-                animate={{ width: `${scrollProgress}%` }}
-                transition={{ ease: "linear", duration: 0.1 }}
-            />
 
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="flex items-center justify-between h-16">
-                    <div className="flex-shrink-0">
+                    <div className="shrink-0">
                         <div className="flex items-center gap-4">
                             <a href="#" className="flex items-center">
                                 <NextImage
@@ -121,7 +194,7 @@ const Navbar = () => {
                                     className="h-10 w-auto object-contain"
                                 />
                             </a>
-                            <a href="#" className="flex items-center">
+                            {/* <a href="#" className="flex items-center">
                                 <NextImage
                                     src="/assets/IEEE_kolkata.png"
                                     alt="IEEE Kolkata Logo"
@@ -129,31 +202,18 @@ const Navbar = () => {
                                     height={50}
                                     className="h-10 w-auto object-contain"
                                 />
-                            </a>
+                            </a> */}
                         </div>
                     </div>
                     <div className="hidden md:block">
-                        <div className="ml-10 flex items-center space-x-4">
+                        <div className={`ml-10 flex items-center space-x-4`}>
                             {navItems.map((item, index) => (
-                                <a
+                                <NavItemWithGlitch
                                     key={item.name}
-                                    href={item.href}
-                                    onClick={(e) => handleNavClick(e, item.href)}
-                                    className={`px-3 py-2 rounded-md text-sm font-mono transition-all duration-300 flex items-center ${activeSection === item.href
-                                        ? "text-green-500"
-                                        : "text-gray-300 hover:text-green-400"
-                                        }`}
-                                >
-                                    {activeSection === item.href && (
-                                        <span className="w-2 h-2  bg-green-500 mr-2 animate-pulse" />
-                                    )}
-                                    <HyperText
-                                        as="span"
-                                        className="text-sm font-mono bg-transparent p-0"
-                                    >
-                                        {item.name}
-                                    </HyperText>
-                                </a>
+                                    item={item}
+                                    isActive={activeSection === item.path}
+                                    onClick={(e) => handleNavClick(e, item.path)}
+                                />
                             ))}
                         </div>
                     </div>
@@ -174,22 +234,22 @@ const Navbar = () => {
                         {navItems.map((item) => (
                             <a
                                 key={item.name}
-                                href={item.href}
-                                className={`block px-3 py-2 rounded-md text-base font-medium flex items-center ${activeSection === item.href
+                                href={item.path}
+                                onClick={(e) => handleNavClick(e, item.path)}
+                                className={`px-3 py-2 rounded-md text-base font-medium flex items-center cursor-pointer ${pixelifySans.className} ${activeSection === item.path
                                     ? "text-green-500"
                                     : "text-gray-300 hover:text-green-400"
                                     }`}
-                                onClick={(e) => handleNavClick(e, item.href)}
                             >
-                                {activeSection === item.href && (
+                                {activeSection === item.path && (
                                     <span className="w-2 h-2 rounded-full bg-green-500 mr-2" />
                                 )}
-                                <HyperText
+                                {/* <HyperText
                                     as="span"
                                     className="text-base font-mono bg-transparent p-0"
-                                >
-                                    {item.name}
-                                </HyperText>
+                                > */}
+                                {item.name}
+                                {/* </HyperText> */}
                             </a>
                         ))}
                     </div>
@@ -198,5 +258,3 @@ const Navbar = () => {
         </nav>
     );
 };
-
-export default Navbar;
